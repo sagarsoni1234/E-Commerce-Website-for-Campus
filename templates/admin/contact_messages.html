@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Contact Messages - Admin{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Contact Messages</h2>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+    
+    {% if messages %}
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Subject</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for message in messages %}
+                <tr class="{% if message.status == 'new' %}table-warning{% endif %}">
+                    <td>{{ message.id }}</td>
+                    <td>
+                        {{ message.name }}
+                        {% if message.user_name %}
+                            <br><small class="text-muted">(User: {{ message.user_name }})</small>
+                        {% endif %}
+                    </td>
+                    <td>{{ message.email }}</td>
+                    <td>{{ message.phone or '-' }}</td>
+                    <td>{{ message.subject }}</td>
+                    <td>
+                        <span class="badge 
+                            {% if message.status == 'new' %}bg-warning
+                            {% elif message.status == 'read' %}bg-info
+                            {% else %}bg-success{% endif %}">
+                            {{ message.status|title }}
+                        </span>
+                    </td>
+                    <td>{{ message.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#messageModal{{ message.id }}">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                        <select class="form-select form-select-sm d-inline-block status-select" 
+                                style="width: auto; display: inline-block;" 
+                                data-message-id="{{ message.id }}">
+                            <option value="new" {% if message.status == 'new' %}selected{% endif %}>New</option>
+                            <option value="read" {% if message.status == 'read' %}selected{% endif %}>Read</option>
+                            <option value="replied" {% if message.status == 'replied' %}selected{% endif %}>Replied</option>
+                        </select>
+                    </td>
+                </tr>
+                
+                <!-- Modal for viewing message -->
+                <div class="modal fade" id="messageModal{{ message.id }}" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Contact Message Details</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <strong>From:</strong> {{ message.name }} ({{ message.email }})
+                                    {% if message.user_name %}
+                                        <br><small class="text-muted">Registered User: {{ message.user_name }}</small>
+                                    {% endif %}
+                                </div>
+                                {% if message.phone %}
+                                <div class="mb-3">
+                                    <strong>Phone:</strong> {{ message.phone }}
+                                </div>
+                                {% endif %}
+                                <div class="mb-3">
+                                    <strong>Subject:</strong> {{ message.subject }}
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Message:</strong>
+                                    <p class="mt-2">{{ message.message }}</p>
+                                </div>
+                                <div class="text-muted small">
+                                    <strong>Submitted:</strong> {{ message.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> No contact messages yet.
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.querySelectorAll('.status-select').forEach(select => {
+    select.addEventListener('change', function() {
+        const messageId = this.dataset.messageId;
+        const status = this.value;
+        
+        fetch('/admin/contact/update_status', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                message_id: parseInt(messageId),
+                status: status
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error updating status');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error updating status');
+        });
+    });
+});
+</script>
+{% endblock %}
+

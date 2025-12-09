@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} - Campus Marketplace{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-6">
+            {% if product.image and product.image != 'default-product.jpg' %}
+            <img src="{{ url_for('static', filename='uploads/' + product.image) }}" 
+                 class="img-fluid rounded shadow" 
+                 alt="{{ product.name }}">
+            {% else %}
+            <div class="img-placeholder rounded shadow d-flex align-items-center justify-content-center" style="height: 400px;">
+                <i class="fas fa-image fa-5x text-white"></i>
+            </div>
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            <h2>{{ product.name }}</h2>
+            <p class="text-muted">Category: {{ product.category }}</p>
+            <h3 class="text-primary mb-3">${{ "%.2f"|format(product.price) }}</h3>
+            
+            <div class="mb-3">
+                {% if product.stock > 0 %}
+                    <span class="badge bg-success">In Stock ({{ product.stock }} available)</span>
+                {% else %}
+                    <span class="badge bg-danger">Out of Stock</span>
+                {% endif %}
+            </div>
+            
+            <p class="mb-4">{{ product.description }}</p>
+            
+            <div class="mb-3">
+                <strong>Seller:</strong> {{ product.seller_name }}<br>
+                <strong>Contact:</strong> {{ product.seller_email }}
+            </div>
+            
+            {% if session.user_id and product.stock > 0 %}
+            <div class="mb-3">
+                <label for="quantity" class="form-label">Quantity:</label>
+                <input type="number" class="form-control d-inline-block" id="quantity" value="1" min="1" max="{{ product.stock }}" style="width: 100px;">
+            </div>
+            <button class="btn btn-primary btn-lg" onclick="addToCart({{ product.id }})">
+                <i class="fas fa-cart-plus"></i> Add to Cart
+            </button>
+            {% elif not session.user_id %}
+            <div class="alert alert-warning">
+                <a href="{{ url_for('login') }}">Login</a> to add items to cart
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Feedback Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3>Customer Feedback</h3>
+            <hr>
+            
+            {% if session.user_id %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5>Add Feedback</h5>
+                    <form id="feedbackForm">
+                        <div class="mb-3">
+                            <label class="form-label">Rating:</label>
+                            <div class="rating">
+                                <input type="radio" name="rating" value="5" id="star5" checked><label for="star5">★</label>
+                                <input type="radio" name="rating" value="4" id="star4"><label for="star4">★</label>
+                                <input type="radio" name="rating" value="3" id="star3"><label for="star3">★</label>
+                                <input type="radio" name="rating" value="2" id="star2"><label for="star2">★</label>
+                                <input type="radio" name="rating" value="1" id="star1"><label for="star1">★</label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <textarea class="form-control" id="comment" rows="3" placeholder="Write your feedback..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit Feedback</button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div id="feedbacksList">
+                {% if feedbacks %}
+                    {% for feedback in feedbacks %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <strong>{{ feedback.user_name }}</strong>
+                                <div>
+                                    {% for i in range(1, 6) %}
+                                        {% if i <= feedback.rating %}
+                                            <span class="text-warning">★</span>
+                                        {% else %}
+                                            <span class="text-muted">★</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <p class="mb-0">{{ feedback.comment }}</p>
+                            <small class="text-muted">{{ feedback.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No feedback yet. Be the first to review!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const productId = {{ product.id }};
+
+function addToCart(productId) {
+    const quantity = document.getElementById('quantity').value;
+    
+    fetch('/add_to_cart', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        credentials: 'same-origin',  // Include cookies/session
+        body: JSON.stringify({
+            product_id: productId,
+            quantity: parseInt(quantity)
+        })
+    })
+    .then(response => {
+        if (response.status === 401) {
+            // Not logged in - redirect to login
+            window.location.href = '/login';
+            return;
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data && data.success) {
+            alert('Item added to cart!');
+        } else if (data) {
+            alert(data.message || 'Error adding to cart');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error adding to cart');
+    });
+}
+
+document.getElementById('feedbackForm')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const rating = document.querySelector('input[name="rating"]:checked').value;
+    const comment = document.getElementById('comment').value;
+    
+    fetch('/add_feedback', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        credentials: 'same-origin',  // Include cookies/session
+        body: JSON.stringify({
+            product_id: productId,
+            rating: parseInt(rating),
+            comment: comment
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Feedback submitted successfully!');
+            location.reload();
+        } else {
+            alert(data.message || 'Error submitting feedback');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error submitting feedback');
+    });
+});
+</script>
+
+<style>
+.rating {
+    direction: rtl;
+    display: inline-block;
+}
+.rating input {
+    display: none;
+}
+.rating label {
+    color: #ddd;
+    font-size: 30px;
+    cursor: pointer;
+}
+.rating input:checked ~ label,
+.rating label:hover,
+.rating label:hover ~ label {
+    color: #ffc107;
+}
+</style>
+{% endblock %}
+

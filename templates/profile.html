@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - Campus Marketplace{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="mb-4">My Profile</h2>
+    
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-circle fa-5x text-primary mb-3"></i>
+                    <h4>{{ user.name }}</h4>
+                    <p class="text-muted">{{ user.email }}</p>
+                    <p class="text-muted">{{ user.phone or 'No phone' }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5>Edit Profile</h5>
+                    <form method="POST" action="{{ url_for('update_profile') }}">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ user.name }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" value="{{ user.phone or '' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Address</label>
+                            <textarea class="form-control" id="address" name="address" rows="3">{{ user.address or '' }}</textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Profile</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5>Recent Orders</h5>
+                    {% if orders %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in orders %}
+                                <tr>
+                                    <td><a href="{{ url_for('order_details', order_id=order.id) }}">#{{ order.id }}</a></td>
+                                    <td>{{ order.created_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>${{ "%.2f"|format(order.total_amount) }}</td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if order.status == 'completed' %}bg-success
+                                            {% elif order.status == 'pending' %}bg-warning
+                                            {% else %}bg-info{% endif %}">
+                                            {{ order.status|title }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <a href="{{ url_for('orders') }}" class="btn btn-sm btn-outline-primary">View All Orders</a>
+                    {% else %}
+                    <p class="text-muted">No orders yet</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <h5>My Products</h5>
+                    {% if products %}
+                    <div class="row">
+                        {% for product in products[:6] %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card">
+                                {% if product.image and product.image != 'default-product.jpg' %}
+                                <img src="{{ url_for('static', filename='uploads/' + product.image) }}" 
+                                     class="card-img-top" 
+                                     style="height: 150px; object-fit: cover;">
+                                {% else %}
+                                <div class="img-placeholder card-img-top d-flex align-items-center justify-content-center" style="height: 150px;">
+                                    <i class="fas fa-image fa-2x text-white"></i>
+                                </div>
+                                {% endif %}
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ product.name }}</h6>
+                                    <p class="card-text small">${{ "%.2f"|format(product.price) }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted">You haven't listed any products yet</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

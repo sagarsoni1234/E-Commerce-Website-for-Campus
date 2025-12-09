@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}General Feedback - Admin{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>General Feedback</h2>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+    
+    {% if feedbacks %}
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Subject</th>
+                    <th>Rating</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for feedback in feedbacks %}
+                <tr class="{% if feedback.status == 'new' %}table-warning{% endif %}">
+                    <td>{{ feedback.id }}</td>
+                    <td>
+                        {{ feedback.name }}
+                        {% if feedback.user_name %}
+                            <br><small class="text-muted">(User: {{ feedback.user_name }})</small>
+                        {% endif %}
+                    </td>
+                    <td>{{ feedback.email }}</td>
+                    <td>{{ feedback.subject or '-' }}</td>
+                    <td>
+                        {% for i in range(1, 6) %}
+                            {% if i <= feedback.rating %}
+                                <span class="text-warning">★</span>
+                            {% else %}
+                                <span class="text-muted">★</span>
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                    <td>
+                        <span class="badge 
+                            {% if feedback.status == 'new' %}bg-warning
+                            {% elif feedback.status == 'read' %}bg-info
+                            {% else %}bg-success{% endif %}">
+                            {{ feedback.status|title }}
+                        </span>
+                    </td>
+                    <td>{{ feedback.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#feedbackModal{{ feedback.id }}">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                        <select class="form-select form-select-sm d-inline-block status-select" 
+                                style="width: auto; display: inline-block;" 
+                                data-feedback-id="{{ feedback.id }}">
+                            <option value="new" {% if feedback.status == 'new' %}selected{% endif %}>New</option>
+                            <option value="read" {% if feedback.status == 'read' %}selected{% endif %}>Read</option>
+                            <option value="replied" {% if feedback.status == 'replied' %}selected{% endif %}>Replied</option>
+                        </select>
+                    </td>
+                </tr>
+                
+                <!-- Modal for viewing feedback -->
+                <div class="modal fade" id="feedbackModal{{ feedback.id }}" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Feedback Details</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <strong>From:</strong> {{ feedback.name }} ({{ feedback.email }})
+                                    {% if feedback.user_name %}
+                                        <br><small class="text-muted">Registered User: {{ feedback.user_name }}</small>
+                                    {% endif %}
+                                </div>
+                                {% if feedback.subject %}
+                                <div class="mb-3">
+                                    <strong>Subject:</strong> {{ feedback.subject }}
+                                </div>
+                                {% endif %}
+                                <div class="mb-3">
+                                    <strong>Rating:</strong>
+                                    {% for i in range(1, 6) %}
+                                        {% if i <= feedback.rating %}
+                                            <span class="text-warning">★</span>
+                                        {% else %}
+                                            <span class="text-muted">★</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Message:</strong>
+                                    <p class="mt-2">{{ feedback.message }}</p>
+                                </div>
+                                <div class="text-muted small">
+                                    <strong>Submitted:</strong> {{ feedback.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> No general feedback yet.
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.querySelectorAll('.status-select').forEach(select => {
+    select.addEventListener('change', function() {
+        const feedbackId = this.dataset.feedbackId;
+        const status = this.value;
+        
+        fetch('/admin/feedback/update_status', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                feedback_id: parseInt(feedbackId),
+                status: status
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error updating status');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error updating status');
+        });
+    });
+});
+</script>
+{% endblock %}
+
