@@ -59,7 +59,7 @@
                                 <tr>
                                     <td><a href="{{ url_for('order_details', order_id=order.id) }}">#{{ order.id }}</a></td>
                                     <td>{{ order.created_at.strftime('%Y-%m-%d') }}</td>
-                                    <td>${{ "%.2f"|format(order.total_amount) }}</td>
+                                    <td>₹{{ "%.2f"|format(order.total_amount) }}</td>
                                     <td>
                                         <span class="badge 
                                             {% if order.status == 'completed' %}bg-success
@@ -99,7 +99,7 @@
                                 {% endif %}
                                 <div class="card-body">
                                     <h6 class="card-title">{{ product.name }}</h6>
-                                    <p class="card-text small">${{ "%.2f"|format(product.price) }}</p>
+                                    <p class="card-text small">₹{{ "%.2f"|format(product.price) }}</p>
                                 </div>
                             </div>
                         </div>

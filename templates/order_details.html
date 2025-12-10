@@ -38,8 +38,8 @@
                                     </div>
                                 </td>
                                 <td>{{ item.quantity }}</td>
-                                <td>${{ "%.2f"|format(item.price) }}</td>
-                                <td>${{ "%.2f"|format(item.price * item.quantity) }}</td>
+                                <td>₹{{ "%.2f"|format(item.price) }}</td>
+                                <td>₹{{ "%.2f"|format(item.price * item.quantity) }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -91,7 +91,7 @@
                     <hr>
                     <div class="d-flex justify-content-between">
                         <strong>Total Amount:</strong>
-                        <strong>${{ "%.2f"|format(order.total_amount) }}</strong>
+                        <strong>₹{{ "%.2f"|format(order.total_amount) }}</strong>
                     </div>
                 </div>
             </div>

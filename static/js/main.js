@@ -130,9 +130,9 @@ function confirmDelete(message = 'Are you sure you want to delete this item?') {
 
 // Format Currency
 function formatCurrency(amount) {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
         style: 'currency',
-        currency: 'USD'
+        currency: 'INR'
     }).format(amount);
 }
 

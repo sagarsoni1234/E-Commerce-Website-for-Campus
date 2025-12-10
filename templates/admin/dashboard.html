@@ -36,7 +36,7 @@
             <div class="card bg-warning text-white">
                 <div class="card-body">
                     <h5>Total Revenue</h5>
-                    <h2>${{ "%.2f"|format(stats.total_revenue) }}</h2>
+                    <h2>₹{{ "%.2f"|format(stats.total_revenue) }}</h2>
                 </div>
             </div>
         </div>
@@ -81,7 +81,7 @@
                                 <tr>
                                     <td><a href="{{ url_for('order_details', order_id=order.id) }}">#{{ order.id }}</a></td>
                                     <td>{{ order.user_name }}</td>
-                                    <td>${{ "%.2f"|format(order.total_amount) }}</td>
+                                    <td>₹{{ "%.2f"|format(order.total_amount) }}</td>
                                     <td>
                                         <span class="badge 
                                             {% if order.status == 'completed' %}bg-success

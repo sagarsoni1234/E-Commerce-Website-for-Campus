@@ -29,7 +29,7 @@
                             <p class="text-muted small mb-0">Seller: {{ item.seller_name }}</p>
                         </div>
                         <div class="col-md-2">
-                            <p class="mb-0"><strong>${{ "%.2f"|format(item.price) }}</strong></p>
+                            <p class="mb-0"><strong>₹{{ "%.2f"|format(item.price) }}</strong></p>
                         </div>
                         <div class="col-md-2">
                             <input type="number" 
@@ -40,7 +40,7 @@
                                    data-price="{{ item.price }}">
                         </div>
                         <div class="col-md-2">
-                            <p class="mb-2"><strong>${{ "%.2f"|format(item.subtotal) }}</strong></p>
+                            <p class="mb-2"><strong>₹{{ "%.2f"|format(item.subtotal) }}</strong></p>
                             <button class="btn btn-sm btn-danger remove-item" data-cart-id="{{ item.id }}">
                                 <i class="fas fa-trash"></i>
                             </button>
@@ -57,7 +57,7 @@
                     <hr>
                     <div class="d-flex justify-content-between mb-3">
                         <span>Subtotal:</span>
-                        <span id="subtotal">${{ "%.2f"|format(total) }}</span>
+                        <span id="subtotal">₹{{ "%.2f"|format(total) }}</span>
                     </div>
                     <div class="d-flex justify-content-between mb-3">
                         <span>Shipping:</span>
@@ -66,7 +66,7 @@
                     <hr>
                     <div class="d-flex justify-content-between mb-3">
                         <strong>Total:</strong>
-                        <strong id="total">${{ "%.2f"|format(total) }}</strong>
+                        <strong id="total">₹{{ "%.2f"|format(total) }}</strong>
                     </div>
                     <a href="{{ url_for('checkout') }}" class="btn btn-primary w-100 btn-lg">
                         Proceed to Checkout

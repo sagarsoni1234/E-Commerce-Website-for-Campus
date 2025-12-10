@@ -46,7 +46,7 @@
                         <p class="card-text text-muted small">{{ product.description[:80] }}...</p>
                         <div class="mt-auto">
                             <p class="card-text mb-2">
-                                <strong class="text-primary">${{ "%.2f"|format(product.price) }}</strong>
+                                <strong class="text-primary">₹{{ "%.2f"|format(product.price) }}</strong>
                                 {% if product.stock > 0 %}
                                     <span class="badge bg-success ms-2">In Stock</span>
                                 {% else %}

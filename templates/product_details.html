@@ -19,7 +19,7 @@
         <div class="col-md-6">
             <h2>{{ product.name }}</h2>
             <p class="text-muted">Category: {{ product.category }}</p>
-            <h3 class="text-primary mb-3">${{ "%.2f"|format(product.price) }}</h3>
+            <h3 class="text-primary mb-3">₹{{ "%.2f"|format(product.price) }}</h3>
             
             <div class="mb-3">
                 {% if product.stock > 0 %}
